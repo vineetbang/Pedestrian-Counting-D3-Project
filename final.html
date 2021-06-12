@@ -1,0 +1,149 @@
+<html>
+        <head>
+            <center><h2>Graph visualization in D3 </h2></center>
+            <style>
+                .svgCanvas {
+                    border: solid 1px
+                }
+            </style>
+        </head>
+        <body>
+            <svg></svg>
+
+            <script src="https://d3js.org/d3.v4.min.js"></script>
+            <script>
+               window.onload = function(){
+
+                   d3.csv("PedestrianCountingSystemWeekdaysAndWeekends.csv", function(data){
+                       console.log(data); 
+
+               // There should be some margin between the canvas boundary and the Line chart
+               var margin = {top: 50, right: 30, bottom: 30, left: 350};
+               width = 1000 - margin.left - margin.right;
+               height = 400 - margin.top - margin.bottom;
+
+               // create the Canvas to draw the Line chart
+               var LineChart = d3.select("svg")
+                .attr("width", 1200)
+                .attr("height", 450)
+                .append("g")
+                .attr("transform",
+                                "translate(" + margin.left + "," + margin.top + ")");
+
+               // Grouping the days
+               var dayFiltered = d3.nest() // d3.nest function to group the variable
+                .key(function(data) { return data.Day;})
+                .entries(data);
+                
+               // color palette
+               var col = dayFiltered.map(function(data){ return data.key }) 
+               var color = d3.scaleOrdinal()
+               .domain(col)
+               .range(['#00FF00','#377eb8'])
+                       
+               // Adding an X axis
+               var x = d3.scaleLinear()
+                .domain(d3.extent(data, function(data) { return +data.TimeOfDay; }))
+                .range([ 0, width ]);
+               LineChart.append("g")
+               .attr("transform", "translate(0," + height + ")")
+               .call(d3.axisBottom(x).ticks(24));
+                       
+               // Adding Y-axis
+               var y = d3.scaleLinear() 
+                .domain([0, d3.max(data, function(data) { return +data.HourlyAverage; })])
+                .range([ height, 0 ]);
+               LineChart.append("g")
+                .call(d3.axisLeft(y));
+                                             
+               // Draw the line
+               LineChart.selectAll(".line")
+                .data(dayFiltered)
+                .enter()
+                .append("path")
+                .attr("fill", "none")
+                .attr("stroke", function(data){ return color(data.key) })
+                .attr("stroke-width", 5)
+                .attr("d", function(data){
+                  return d3.line()
+                    .x(function(data) { return x(+data.TimeOfDay); })
+                    .y(function(data) { return y(+data.HourlyAverage); })
+                    (data.values)
+                })       
+                                 
+               // Text at X axis
+               LineChart.append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", width-250)
+                .attr("y", height + 50)
+                .text("Time Of Day");
+
+               // Text at Y axis
+               LineChart.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("y", 0 - 70)
+                .attr("x", 0 - (height / 3))
+                .attr("dy", "1em")
+                .attr("transform", "rotate(-90)")
+                .text("Hourly Average");
+                 
+                // For Mouse Move       
+                var move = function(data) {
+                    tooltip
+                    .html("Day Type: " + data.Day + "<br>Hour: " + data.TimeOfDay + "<br>Average Count of Pedestrian :" + data.HourlyAverage)
+                    .style("left", (d3.mouse(this)[0]+90) + "px") 
+                    .style("top", (d3.mouse(this)[1]) + "px")
+                }
+                       
+               // For ToolTip on Dots in Line Chart
+               var tooltip = d3.select("LineChart")
+                .append("path")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "7px")
+                .style("padding", "12px")
+    
+               // For Mouse Over
+               var over = function(data) {
+                tooltip
+                    .style("opacity", 1.5)
+                }
+               
+               var mouseleave = function(data) {
+                   tooltip
+                   .transition()
+                   .duration(200)
+                   .style("opacity", 0)
+                }
+               
+               // To add Dots to Line Chart
+               LineChart.append("g")
+                .selectAll("dot")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("fill", "Red")
+                .attr("cx", function(data) { return x(+data.TimeOfDay) } )
+                .attr("cy", function(data) { return y(+data.HourlyAverage) } )
+                .attr("r", 4)
+                .on("mouseover", over )
+                .on("mousemove", move )
+                    
+               // To add Main text to Line chart       
+               LineChart.append("text")
+                .attr("x", (width / 3))             
+                .attr("y", 0 - (margin.top / 2))
+                .attr("text-anchor", "middle")  
+                .style("font-size", "15px") 
+                .text("At Weekdays the Pedestrian numbers fluctuate at peak hours, whilst at weekends it largely fluctuates during the day.");
+               });
+                   
+             }
+        </script>
+    </body>
+</html>

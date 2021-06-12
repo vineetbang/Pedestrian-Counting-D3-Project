@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <center><h2>D3 Activity</h2></center>
+        <style>
+            .svgCanvas {
+                border: solid 1px
+            }
+        </style>
+    </head>
+    <body>
+        <svg></svg>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script>
+        window.onload = function(){
+            
+        d3.csv("PedestrianCountingSystemWeekdaysAndWeekends.csv", function(data){
+        console.log(data); 
+
+        var width = 600;
+        var height = 300;
+            
+        var svgCanvas = d3.select("svg")
+            .attr("width", 800)
+            .attr("height", 510)
+            .attr("class", "svgCanvas");
+        
+        var toRemove = "Weekday"
+           
+//                var hour = d3.timeFormat("%H")
+//                data.forEach(function(d) {
+//                    d.date = parseDate(d.date);
+//                    d.close = +d.close;
+//                });
+
+//                var margin = {top: 10, right: 20, bottom: 30, left: 50};
+//                width = width - margin.left - margin.right;
+//                height = height - margin.top - margin.bottom;
+//                
+//                // create the area to draw the line chart
+//                // g is a SVG element to group multiple SVG elements
+//                var barChartArea = thisCanvas
+//                    .append("g")
+//                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//                
+//                });
+        
+
+//        function isWeekday(){
+//            //d3.data(data.filter(function(d){return d[0] == "Weekday"}))
+//            
+//        filteredArray = data.filter(function( el ) {
+//        return !toRemove.includes( el );
+//        }
+//        
+//        console.log(data.filter(isWeekday));
+//            )
+//            }
+            
+        data.filter(function(d){ return d[0] == "Weekday" })
+        })
+    }
+        </script>
+    </body>
+</html>

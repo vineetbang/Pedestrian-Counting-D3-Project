@@ -1,0 +1,108 @@
+<html>
+        <head>
+            <center><h2>Interactive D3 Visualisation</h2></center>
+            <style>
+                .svgCanvas {
+                    border: solid 1px
+                }
+            </style>
+        </head>
+        <body>
+            <svg></svg>
+
+            <script src="https://d3js.org/d3.v4.min.js"></script>
+            <script>
+               window.onload = function(){
+
+                    d3.csv("PedestrianCountingSystemWeekdaysAndWeekends.csv", function(final){
+                        console.log(final); 
+                   
+                // We want some margin between the boundary of the canvas and the bar charts
+                    var margin = {top: 20, right: 40, bottom: 40, left: 150};
+                    width = 900 - margin.left - margin.right;
+                    height = 400 - margin.top - margin.bottom;
+
+                  var LC = d3.select("svg")
+                   .attr("width", 950)
+                   .attr("height", 550)
+                   .append("g")
+                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                    // grouping the days
+                    var grouping_days = d3.nest() 
+                    .key(function(final) { return final.day;})
+                    .entries(final);
+                        
+                    // Adding an X axis
+                     var x = d3.scaleLinear()
+                     .domain(d3.extent(final, function(final) { return +final.TimeOfDay; }))
+                     .range([ 0, width ]);
+                        
+                      LC.append("g")
+                     .attr("transform", "translate(0," + height + ")")
+                     .call(d3.axisBottom(x).ticks(25));
+
+                    var y = d3.scaleLinear() 
+                    .domain([0, d3.max(final, function(final) { return +final.HourlyAverage; })])
+                    .range([ height, 0 ]);
+                        
+                    LC.append("g")
+                   .call(d3.axisLeft(y));
+
+                        
+                    // color palette
+                    var r = grouping_days.map(function(final){ return final.key }) // list of group names
+                    var color = d3.scaleOrdinal()
+                    .domain(r)
+                    .range(['#4169E1','#FFFF66'])
+                    
+                    //line chart is made
+                    LC.selectAll(".line")
+                    .data(grouping_days)
+                    .enter()
+                    .append("path")
+                        .attr("fill", "none")
+                        .attr("stroke", function(final){ return color(final.key) })
+                        .attr("stroke-width", 3)
+                        .attr("d", function(final){
+                        return d3.line()
+                            .x(function(final) { return x(+final.TimeOfDay); })
+                            .y(function(final) { return y(+final.HourlyAverage); })
+                            (final.values)
+                    })
+                    // circles are being added to the line
+                    LC
+                     .append("g")
+                     .selectAll("dot")
+                     .data(final)
+                     .enter()
+                     .append("circle")
+                     .attr("cx", function(final) { return x(+final.TimeOfDay) } )
+                     .attr("cy", function(final) { return y(+final.HourlyAverage) } )
+                     .attr("r", 5)
+                     .attr("fill", "yellow")
+                        
+                        
+                     LC.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width-200)
+    .attr("y", height + 55)
+    .text("Time Of Day");
+    
+    LC.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", 0 - 80)
+    .attr("x", 0 - (height / 3))
+    .attr("dy", "1em")
+    .attr("transform", "rotate(-90)")
+    .text("Hourly Average");
+                    });
+                  
+    
+                   
+                }
+            </script>
+        </body>
+    </html>
